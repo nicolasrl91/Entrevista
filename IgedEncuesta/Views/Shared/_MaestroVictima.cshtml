@@ -1,0 +1,118 @@
+﻿@model IEnumerable<IgedEncuesta.Models.mdlEncuesta.Victima>
+
+@{
+    ViewBag.Title = "MaestroVictimas";
+    var lista = (List<string>)TempData["SelectList"];
+    
+    var total = Model.Count();
+    TempData["TotalConsulta"] = total;
+
+    TempData["PERFILES"] = Model;
+    TempData.Keep("PERFILES");
+    List<IgedEncuesta.Models.mdlEncuesta.Victima> modeloHogar = (List<IgedEncuesta.Models.mdlEncuesta.Victima>)TempData["ModeloHogar"];
+    var modelo = ViewBag.ModeloSerializado;
+}
+
+<style>
+    .hdtipodoc {
+        width: 30px;
+    }
+
+    .hddocumento {
+        width: 20px;
+    }
+
+    .hdnombre {
+        width: 90px;
+    }
+    .hdfnacimiento {
+        width: 20px;
+    }
+    .hdhecho {
+        width: 70px;
+    }
+
+    .hdestado {
+        width: 50px;
+    }
+
+    .hdedad {
+        width: 40px;
+    }
+    .hdgenero {
+        width: 20px;
+    }
+
+
+</style>
+
+<br />
+
+<input type="hidden" id="totalConsulta" value="@total">
+<input type="hidden" id="hdModelo" name="ModeloVictimas" value="@modelo">
+
+
+
+<div id="gridContentMaestro" class="marcoGrid" style="width: 100%">
+    @{
+        //var filaGrid = new PortalAplicacionesRNI.Models.gridDatos();
+        //var grid = new WebGrid(Model);                         
+        // Instanciamiento del helper webgrid
+        WebGrid grid = new WebGrid(Model, canPage: true, rowsPerPage: 5, canSort: false,
+        selectionFieldName: "selectedRow", ajaxUpdateContainerId: "gridContentMaestro");        
+
+        grid.Pager(WebGridPagerModes.NextPrevious);
+        
+    }
+
+    @grid.GetHtml(
+                        
+                        tableStyle: "grid-view",
+                        headerStyle: "grid-view-header",
+                        rowStyle: "grid-view-tr-normal",
+                        alternatingRowStyle: "grid-view-tr-alternate",
+                        footerStyle: "grid-view-pgr",
+                        columns: grid.Columns(
+                        grid.Column("TIPO_DOC", "TIPO DOC", style: "hdtipodoc"),
+                        
+                        grid.Column("DOCUMENTO", "DOCUMENTO", style: "hddocumento"),
+                        
+                        grid.Column("NOMBRES_COMPLETOS", "NOMBRE", style: "hdnombre"),
+                        grid.Column("F_NACIMIENTO", "FECHA NACIMIENTO", style: "hdfnacimiento"),
+                        
+                        grid.Column("EDAD", "EDAD", style: "hdedad"),
+                        grid.Column("TIPO_VICTIMA", "ESTADO", style: "hdestado"),
+                        
+                        grid.Column("GENERO_HOM", "GENERO", style: "hdgenero"),
+                        grid.Column("HECHOS", "HECHO VICTIMIZANTE", style: "hdhecho"),
+                        grid.Column("FECHA_HECHO", "FECHA HECHO", style: "hdfnacimiento"),
+
+
+                        grid.Column(header: "INCLUIR",
+                        
+                        format: (item =>
+                        {
+                            if (modeloHogar != null)
+                            {
+                                if (modeloHogar.Any(x => x.CONS_PERSONA == @item.CONS_PERSONA && x.ID_TBPERSONA == @item.ID_TBPERSONA))
+                                    return Html.Raw("<img src='" + @Url.Content("~/Content/Icons/check-3.png") + "' title='Incluir Víctima'  style='height:22px;width:22px;'><input type='hidden' id='ExisteVictimaSeleccionada' value='SI'>");
+                                else
+                                {
+                                    if (@item.HABILITADO_PARA_CARACTERIZACION == "SI")
+                                        return Html.Raw("<a href='#' id= 'incluirMaestro_" + @item.CONS_PERSONA + "-" + @item.DOCUMENTO + "' class='incluirMaestro' onclick='incluirVictima(this)' name='" + @item.ID_TBPERSONA + "'> <img src='" + Url.Content("~/Content/Icons/add_person.png") + "' title='Incluir Víctima' id='imgIncluirMaestro_" + @item.CONS_PERSONA + "' style='height:22px;width:22px;'></a>");
+                                    else
+                                        return Html.Raw("<a href='#' id= 'incluirMaestro_" + @item.CONS_PERSONA + "-" + @item.DOCUMENTO + "' class='incluirMaestro'  name='" + @item.ID_TBPERSONA + "'> <img src='" + Url.Content("~/Content/Icons/add_person_off.png") + "' title='No habilitado por ultima encuesta activa. el código  es : " + @item.COD_HOGAR + " ' id='imgIncluirMaestro_" + @item.CONS_PERSONA + "' style='height:22px;width:22px;'></a>");
+                                }
+                            }
+                            else
+                            {
+                                if (@item.HABILITADO_PARA_CARACTERIZACION == "SI")
+                                    return Html.Raw("<a href='#' id='incluirMaestro_" + @item.CONS_PERSONA + "-" + @item.DOCUMENTO + "' class='incluirMaestro' onclick='incluirVictima(this)'  name='" + @item.ID_TBPERSONA + "'> <img src='" + Url.Content("~/Content/Icons/add_person.png") + "' title='Incluir Víctima' id='imgIncluirMaestro_" + @item.CONS_PERSONA + "' style='height:22px;width:22px;'></a>");
+                                else
+                                    return Html.Raw("<a href='#' id='incluirMaestro_" + @item.CONS_PERSONA + "-" + @item.DOCUMENTO + "' class=''   name='" + @item.ID_TBPERSONA + "'> <img src='" + Url.Content("~/Content/Icons/add_person_off.png") + "' title='Persona ya encuestada con código " + @item.COD_HOGAR + " en estado  " + @item.ESTADO_ENCUESTA + ".' id='imgIncluirMaestroEx_" + @item.CONS_PERSONA + "' style='height:22px;width:22px;'></a>");
+                            }
+
+                        }), style: "hdestado")
+    ))         
+
+</div>
